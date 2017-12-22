@@ -1,0 +1,25 @@
+{
+	"name": "chrome-avgle-helper",
+	"version": "1.0.0",
+	"description": "A Chrome extension for enhancing Avgle website",
+	"main": "src/index.js",
+	"scripts": {
+		"start": "node ./build/build.js",
+		"build": "node ./build/build.js",
+		"watch": "node ./build/build.js -w"
+	},
+	"author": "OldDriver",
+	"license": "GPL-3.0",
+	"keywords": [
+		"avgle",
+		"chrome",
+		"extension"
+	],
+	"devDependencies": {
+		"@types/chrome": "0.0.56",
+		"@types/node": "^8.5.2",
+		"babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
+		"babelify": "^8.0.0",
+		"watch": "^1.0.2"
+	}
+}

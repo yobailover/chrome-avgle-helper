@@ -1,0 +1,29 @@
+name: Chrome avgle helper
+src:
+    base: src
+    assets: []
+    pages:
+    scripts:
+        - "index.js"
+    styles:
+dist:
+    base: dist
+    clean: true
+
+watch:
+    - "src"
+
+processor:
+    source_map:
+        enable: true
+        js: true
+        css: false
+    babel:
+        enable: true
+        babelrc: .babelrc
+    browserify:
+        transform:
+            - name: "babelify"
+              options: 
+                plugins:
+                    - "transform-es2015-modules-commonjs"

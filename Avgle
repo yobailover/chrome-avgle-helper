@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+
+ALL_IN_ONE_TS_FILE="av.ts"
+DIR_NAME=$(basename `pwd`)
+TARGET_FILE="../${DIR_NAME}.mp4"
+
+#================================
+#====   Colorized variables  ====
+RED="\e[0;31m"
+RED_BOLD="\e[1;31m"
+YELLOW_BOLD="\e[1;33m"
+GREEN="\e[0;32m"
+GREEN_BOLD="\e[1;32m"
+BLUE="\e[0;34m"
+BLUE_BOLD="\e[1;34m"
+BOLD="\e[1m"
+RESET="\e[0m"
+#================================
+#====   Basic functions  ========
+function yes_no() {
+	local yn text=$1
+	while true; do
+	read -p "${text}" yn
+		case $yn in
+			[Yy]* ) echo "yes"; break ;;
+			[Nn]* ) echo "no"; break ;;
+		esac
+	done
+}
+function title() { echo -e "${BLUE_BOLD}# $1 ${RESET}"; }
+function subTitle() { echo -e "${BLUE}## $1 ${RESET}"; }
+function finish() { echo -e "\n${GREEN_BOLD}# Finish!${RESET}\n"; exit 0; }
+function warn() { echo -e "${YELLOW_BOLD} warning: ${1} ${RESET}"; }
+function success() { echo -e "${GREEN} success: ${1} ${RESET}"; }
+function error() { echo -e "${RED}  error: ${RED_BOLD}$1${RESET}\n"; exit 1; }
+#================================
+
+#===========================================
+#        M a i n   F u n c t i o n 
+#===========================================
+
+DIV_LINE="===============================================";
+echo -e "\n${DIV_LINE}"
+echo -e '                    _      '
+echo -e '     /\            | |     '
+echo -e '    /  \__   ____ _| | ___ '
+echo -e '   / /\ \ \ / / _` | |/ _ \'
+echo -e '  / ____ \ V / (_| | |  __/'
+echo -e ' /_/    \_\_/ \__, |_|\___|'
+echo -e '               __/ |       '
+echo -e '              |___/        '
+echo -e ''
+echo -e "${BOLD} 1.Concat seg-*-v1-a1.ts you downloaded from avgle"
+echo -e "${BOLD} 2.Convert ts file to mp4 using ffmpeg"
+echo -e "${BOLD} 3.Rename mp4 file followed folder name automatically"
+echo -e "${BOLD} 4.Remove All temporary *.ts files${RESET}"
+echo -e "${DIV_LINE}\n"
+
+# Checking tools
+[[ -z `which ffmpeg` ]] && error "this script require ffmpeg!";
+
+# Checking path
+[[ -z "$DIR_NAME" ]] && error "current directory name is empty (dangerous)!";
+
+# Getting max number
+MAX_NUMBE=$(ls | tr ' ' '\n' | gawk '
+	/seg-([0-9]+)-v1-a1.ts/ {
+		if(match($1, /seg-([0-9]+)-v1-a1.ts/, result)) {
+			v = result[1] - 0;
+			if(v > max)
+				max = v;
+		}
+	}
+	END {print max ? max : "NULL"}')
+[[ "$MAX_NUMBE" == "NULL" ]] && error "could not find any seg-*-v1-a1.ts you download from avgle.com";
+title "Found avgle ts files, max ts file number is: ${MAX_NUMBE}"
+
+# Valid all ts files is under folder
+FILES_OK=true
+for i in $(seq  $MAX_NUMBE); do
+	FNAME="seg-${i}-v1-a1.ts"
+	if [[ ! -f "$FNAME" ]]; then
+		warn "$FNAME is missing!";
+		FILES_OK=false
+	fi
+done
+[[ "$FILES_OK" == "false" ]] && error "*.ts files are not completed!"
+title "Validated all *.ts files from avgle.com"
+
+# Concat ts files
+title "Concatenating ts files ..."
+[[ -f "$ALL_IN_ONE_TS_FILE" ]] && rm $ALL_IN_ONE_TS_FILE -f;
+for i in $(seq  $MAX_NUMBE); do
+	cat "seg-${i}-v1-a1.ts" >> $ALL_IN_ONE_TS_FILE
+	[[ -n `echo ${i} | grep '00$'` ]] && echo "  progress: ${i}/${MAX_NUMBE}";
+done
+title "Concatenated ts files to $ALL_IN_ONE_TS_FILE"
+
+# Converting ts file
+title "Converting ts file to mp4 files ..."
+[[ -f "$TARGET_FILE" ]] && rm "$TARGET_FILE" -f;
+ffmpeg -i "${ALL_IN_ONE_TS_FILE}" -acodec copy -vcodec copy "${TARGET_FILE}"
+title "Converted ts file to ${TARGET_FILE}"
+
+# Deleting files
+echo -e ""
+SURE_RM=$(yes_no "Do you want to deleting *.ts files?[y/n]")
+[[ "$SURE_RM" == "no" ]] && finish
+
+title "Deleting seg-*-v1-a1.ts files ..."
+for i in $(seq  $MAX_NUMBE); do
+	rm "seg-${i}-v1-a1.ts" -f
+done
+rm av.ts -f
+title "Deleted!"
+
+
+finish
