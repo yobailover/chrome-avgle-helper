@@ -1,7 +1,7 @@
 //@ts-check
 
 import { M3U8_PATTERN, VIDEO_PAGE_PATTERN } from "./config";
-import { getInjectScript } from "./inject";
+import { getInjectScript } from "./inject_to_player";
 import { getDownloadCmdFromM3U8 } from "./m3u8";
 
 console.log('Chrome Avgle Helper background script started!');

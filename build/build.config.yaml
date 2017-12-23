@@ -5,6 +5,7 @@ src:
     pages:
     scripts:
         - "index.js"
+        - "inject_to_normal.js"
     styles:
 dist:
     base: dist

@@ -7,6 +7,12 @@
 		"scripts": ["dist/index.js"],
 		"persistent": true
 	},
+	"content_scripts": [{
+		"matches": ["*://avgle.com/*"],
+		"run_at": "document_end",
+		"all_frames": false,
+		"js": ["dist/inject_to_normal.js"]
+	}],
 	"icons": {
 		"128": "icons/128.png"
 	},

@@ -1,11 +1,18 @@
+import helper from "./inject_utils";
+
 export function getInjectScript(errorStr, commandDisplay) { 
-	return `(${chromeAvgleHelperInjectScript.toString()})(
-		${JSON.stringify(errorStr)}, 
-		${JSON.stringify(commandDisplay)}
-	);`;
+	const injectHelperName = 'chromeAvgleHelper';
+	
+	return `
+		${helper.getInjectCodes(injectHelperName)};
+		(${inject2player.toString()})(
+			${injectHelperName},
+			${JSON.stringify(errorStr)}, 
+			${JSON.stringify(commandDisplay)}
+		);`;
 }
 
-function chromeAvgleHelperInjectScript(errorStr, commandDisplay) {
+function inject2player(utilsContext, errorStr, commandDisplay) {
 	let videoTitleDOM = document.querySelector('.container .row .col-lg-12 h1');
 
 	// delete inner functions
@@ -30,7 +37,7 @@ function chromeAvgleHelperInjectScript(errorStr, commandDisplay) {
 	for (let node of videoTitleDOM.childNodes) {
 		if (node.nodeType == Node.TEXT_NODE) {
 			let videoTitle = node.textContent;
-			let carNumber = parseCarNumber(videoTitle);
+			let carNumber = utilsContext.parseCarNumber(videoTitle);
 			
 			if (carNumber) {
 				let carNumDOM = document.createElement('b');
@@ -72,14 +79,5 @@ function chromeAvgleHelperInjectScript(errorStr, commandDisplay) {
 	mainRow.removeChild(asideAd);
 	for(let e of mainRow.childNodes) 
 		e.className = 'col-lg-12';
-	
-	function parseCarNumber(str = '') { 
-		const matcher = /(fc2-)?(\w+)-(\d+)/i;
-		let result = str.match(matcher);
-
-		if (result)
-			return result[0];
-		return null;
-	}
 	
 }
