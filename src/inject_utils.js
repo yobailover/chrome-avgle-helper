@@ -15,18 +15,24 @@ function getInjectCodes(wrapperName) {
 
 function parseCarNumber(str = '') { 
 	const matchers = [
-		
+		//10musume 123117_01 ...
+		[/10musume[\-_\s](\d{6})[\-_\s](\d{2})/i, match => `10musume-${match[1]}-${match[2]}`],
+
 		// fc2-ppv-10045 or fc2ppv-10056 ...
-		[/fc2[\s\-]?ppv[\s\-]?(\d+)/i, match => `FC2-PPV-${match[1]}` ], 
+		[/fc2[\s\-_]?ppv[\s\-_]?(\d+)/i, match => `FC2-PPV-${match[1]}` ], 
 		
 		// S-Cute Ava #1
 		[/S-Cute\s+(\w+)\s+#(\d+)/i, match => `S-Cute-${match[1]}-${match[2]}`],
 
 		//Heydouga
-		[/Heydouga[\-\s]?(\d+)[\-\s]?(\d+)/i, match => `Heydouga-${match[1]}-${match[2]}`],
+		[/Heydouga[\-_\s]?(\d+)[\-_\s]?(\d+)/i, match => `Heydouga-${match[1]}-${match[2]}`],
+
+		//heyzo
+		[/heyzo[\-_\s]?(\d+)/i, match => `heyzo-${match[1]}`],
 
 		//Caribbean
-		[/Caribbean[\-\s]?(\d+)[\-\s]?(\d+)/i, match => `Caribbean-${match[1]}-${match[2]}`],
+		[/(\d+)[\-_\s](\d+)[\-_\s]Carib(?:bean(?:com)?)?/i, match => `carib-${match[1]}-${match[2]}`],
+		[/Carib(?:bean(?:com)?)?[\-_\s]?(\d+)[\-_\s]?(\d+)/i, match => `carib-${match[1]}-${match[2]}`],
 
 		//xxx-010 ...
 		/\w+-\d+/i,
