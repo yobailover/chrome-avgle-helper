@@ -3,9 +3,11 @@ src:
     base: src
     assets: []
     pages:
+        - "popup.html"
     scripts:
         - "index.js"
         - "inject_to_normal.js"
+        - "popup.js"
     styles:
 dist:
     base: dist
@@ -25,6 +27,6 @@ processor:
     browserify:
         transform:
             - name: "babelify"
-              options: 
+              options:
                 plugins:
                     - "transform-es2015-modules-commonjs"
