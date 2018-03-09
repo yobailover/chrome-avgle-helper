@@ -55,7 +55,7 @@ echo -e ' /_/    \_\_/ \__, |_|\___|'
 echo -e '               __/ |       '
 echo -e '              |___/        '
 echo -e ''
-echo -e '            Update date: 2018-02-27'
+echo -e '            Update date: 2018-03-10'
 echo -e ''
 echo -e "${BOLD} 1.Concat seg-*-v1-a1.ts you downloaded from avgle"
 echo -e "${BOLD} 2.Convert ts file to mp4 using ffmpeg"
@@ -144,7 +144,7 @@ confirm || finish
 
 title "Deleting seg-*-v1-a1.ts files ..."
 for (( i=1 ; i<=$MAX_NUMBE ; i++ )) do rm "seg-${i}-v1-a1.ts" -f; done
-rm av.ts -f;
+rm "${TEMP_FILE}" -f;
 title "All temporary files are deleted!"
 
 finish

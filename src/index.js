@@ -46,6 +46,7 @@ chrome.webRequest.onBeforeRequest.addListener(details => {
 		if (!tab.url.match(VIDEO_PAGE_PATTERN))
 			return info("Ignore this tab!");
 
+		let m3u8URLBase64 = btoa(details.url);
 		let xhr = new XMLHttpRequest();
 		xhr.open('GET', details.url);
 		xhr.onload = () => {
@@ -58,34 +59,27 @@ chrome.webRequest.onBeforeRequest.addListener(details => {
 
 			try {
 				let command = getDownloadCmdFromM3U8(xhr.responseText);
-				injectScript(null, command);
+				injectScript(null, {
+					command,
+					m3u8URLBase64,
+					tabURL: tab.url,
+				});
 			} catch (ex) {
-				injectScript(ex, null);
+				injectScript(ex, {});
 			}
 
 		};
-		xhr.onerror = err => injectScript(err, null);
+		xhr.onerror = err => injectScript(err, {});
 		xhr.send();
 
-		function injectScript(err, command = null) {
+		function injectScript(err, parameters = {}) {
 			if (err)
 				if (typeof err != 'string')
 					err = `${err.message}\n${err.stack}`;
 			chrome.tabs.executeScript(details.tabId, {
-				code: getInjectScript(err, command)
+				code: getInjectScript(err, parameters)
 			}, () => { info('Inject script success!'); });
 		}
 	});
 
 }, { urls: [M3U8_PATTERN] });
-
-/**
- * @param {MessageObject} msg
- * @param {Function} response
- */
-function onMessage(msg, _, response) {
-	if (msg) console.log(`onMessage: ${msg.name}`);
-	if (msg.name == 'get-history-log') {
-		return response(getLogHistoryHTML());
-	}
-}

@@ -1,6 +1,6 @@
 import helper from "./inject_utils";
 
-export function getInjectScript(errorStr, commandDisplay) {
+export function getInjectScript(errorStr, paramters) {
 	const injectHelperName = 'chromeAvgleHelper';
 
 	return `
@@ -8,11 +8,16 @@ export function getInjectScript(errorStr, commandDisplay) {
 		(${inject2player.toString()})(
 			${injectHelperName},
 			${JSON.stringify(errorStr)},
-			${JSON.stringify(commandDisplay)}
+			${JSON.stringify(paramters)}
 		);`;
 }
 
-function inject2player(utilsContext, errorStr, commandDisplay) {
+function inject2player(utilsContext, errorStr, paramters = {}) {
+	let command = String(paramters.command || ''),
+		tabURL = String(paramters.tabURL || ''),
+		m3u8URLBase64 = String(paramters.m3u8URLBase64 || '');
+
+
 	let videoTitleDOM = document.querySelector('.container .row .col-lg-12 h1');
 
 	let addonCommand = '';
@@ -23,16 +28,23 @@ function inject2player(utilsContext, errorStr, commandDisplay) {
 		if (node.nodeType == Node.TEXT_NODE) {
 			let videoTitle = node.textContent;
 			let carNumber = utilsContext.parseCarNumber(videoTitle);
-
-			if (carNumber) {
+			if (!carNumber) {
+				let avgleId = tabURL.match(/\/(\d+)\//);
+				carNumber = `avgle-${avgleId ? avgleId[1] : 'unknown'}`;
+			} else if (!document.querySelector('.chrome-avgle-extension.car-number')) {
+				// if has not insert car number badge
 				let carNumDOM = document.createElement('b');
-				carNumDOM.className = 'text-success';
+				carNumDOM.className = 'text-success chrome-avgle-extension car-number';
 				carNumDOM.innerText = carNumber;
 				carNumDOM.style.margin = '0 .5em';
 				node.parentNode.insertBefore(carNumDOM, node);
-
-				addonCommand = `mkdir ${carNumber};\ncd ${carNumber};`;
 			}
+
+			addonCommand = [
+				`mkdir ${carNumber};`,
+				`cd ${carNumber};`,
+				`AvgleDownloader ${carNumber} ${m3u8URLBase64};`
+			].join('\n');
 			break;
 		}
 	}
@@ -48,7 +60,7 @@ function inject2player(utilsContext, errorStr, commandDisplay) {
 	} else {
 		injectDiv.innerHTML = `
 			Download Command:<br/>
-			<pre><code>${addonCommand}\n${commandDisplay}\n${endCommand}</code></pre>
+			<pre><code>${addonCommand}\n${command}\n${endCommand}</code></pre>
 		`;
 	}
 
