@@ -55,7 +55,7 @@ echo -e ' | | | |/ _ \ \ /\ / / '\''_ \| |/ _ \ / _` |/ _` |/ _ \ '\''__|'
 echo -e ' | |_| | (_) \ V  V /| | | | | (_) | (_| | (_| |  __/ |   '
 echo -e ' |____/ \___/ \_/\_/ |_| |_|_|\___/ \__,_|\__,_|\___|_|   '
 echo -e ''
-echo -e '            Update date: 2018-03-10'
+echo -e '            Update date: 2018-03-12'
 echo -e ''
 echo -e "${BOLD} Usage: AvgleDownloader <video-name> <m3u8-url-base64>${RESET}"
 echo -e ''
@@ -132,21 +132,22 @@ function getBetterFileList() {
 		if(i!=from) print "{" from ".." i "}";
 		else print from;
 	}
-	BEGIN { i=0; from=0; }
+	BEGIN { i=-1; from=-1; }
 	!/^\s*$/ { # ignore empty line
 		if($1!=i+1) {
-			if(from!=0) printRange();
+			if(from!=-1) printRange();
 			from=$1; i=$1; # reset
 		} else {
 			i=$1;
 			if(i-from==50) { # max step is 50
 				printRange();
-				from=0; i=0;
+				from=-1; i=-1;
 			}
 		}
 	}
 	END { if(from!=0) printRange(); }'
 }
+
 getBetterFileList "$MISSING_FILE" | while read range; do
 
 	DOWNLOAD_URL="${DOWNLOAD_URL_PREFIX}/seg-${range}-v1-a1.ts";

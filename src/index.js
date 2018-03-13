@@ -3,7 +3,6 @@
 
 import { M3U8_PATTERN, VIDEO_PAGE_PATTERN } from "./config";
 import { getInjectScript } from "./inject_to_player";
-import { getDownloadCmdFromM3U8 } from "./m3u8";
 import { info, getLogHistoryHTML, error, bindLogCallback, unbindLogCallback, clearLogHistory } from "./logger";
 
 info('Chrome Avgle Helper background script started!');
@@ -46,40 +45,43 @@ chrome.webRequest.onBeforeRequest.addListener(details => {
 		if (!tab.url.match(VIDEO_PAGE_PATTERN))
 			return info("Ignore this tab!");
 
-		let m3u8URLBase64 = btoa(details.url);
-		let xhr = new XMLHttpRequest();
-		xhr.open('GET', details.url);
-		xhr.onload = () => {
+		let m3u8URL = details.url;
+		let m3u8URLBase64 = btoa(m3u8URL);
 
-			if (xhr.readyState != 4 || xhr.status != 200) {
-				return injectScript(`m3u8 file request failed! ` +
-					`(readyState = ${xhr.readyState}; status = ${xhr.status};)\n` +
-					`URL:${details.url}`);
-			}
+		// let xhr = new XMLHttpRequest();
+		// xhr.open('GET', m3u8URL);
+		// xhr.onload = () => {
+		// 	if (xhr.readyState != 4 || xhr.status != 200)
+		// 		return onXHRError();
+		// };
+		// xhr.onerror = onXHRError;
+		// xhr.send();
 
-			try {
-				let command = getDownloadCmdFromM3U8(xhr.responseText);
-				injectScript(null, {
-					command,
-					m3u8URLBase64,
-					tabURL: tab.url,
-				});
-			} catch (ex) {
-				injectScript(ex, {});
-			}
-
-		};
-		xhr.onerror = err => injectScript(err, {});
-		xhr.send();
+		injectScript(null, { m3u8URLBase64, tabURL: tab.url });
 
 		function injectScript(err, parameters = {}) {
-			if (err)
-				if (typeof err != 'string')
-					err = `${err.message}\n${err.stack}`;
+			if (err && (typeof err != 'string'))
+				err = 'message' in err ? `${err.message}\n${err.stack}` : String(err);
+
 			chrome.tabs.executeScript(details.tabId, {
 				code: getInjectScript(err, parameters)
 			}, () => { info('Inject script success!'); });
 		}
+
+		// /** @param {ErrorEvent} [errorEvent]  */
+		// function onXHRError(errorEvent) {
+		// 	let message = ['Request m3u8 file failed!'];
+		// 	if (errorEvent) message.push(`  ErrorType: ${errorEvent.type}`);
+		// 	message.push(`  URL: ${m3u8URL}`);
+		// 	message.push(`  ReadyState: ${xhr.readyState}`);
+		// 	message.push(`  Status: ${xhr.status} (${xhr.statusText})`);
+
+		// 	let response = String(xhr.responseText), responseLength = response.length;
+		// 	if (response.length > 100)
+		// 		response = response.slice(0, 100) + `... (length: ${responseLength})`;
+		// 	message.push(`  Response: ${response}`);
+		// 	return injectScript(message.join('\n'), {});
+		// }
 	});
 
 }, { urls: [M3U8_PATTERN] });

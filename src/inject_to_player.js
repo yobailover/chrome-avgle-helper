@@ -13,15 +13,13 @@ export function getInjectScript(errorStr, paramters) {
 }
 
 function inject2player(utilsContext, errorStr, paramters = {}) {
-	let command = String(paramters.command || ''),
-		tabURL = String(paramters.tabURL || ''),
+	let tabURL = String(paramters.tabURL || ''),
 		m3u8URLBase64 = String(paramters.m3u8URLBase64 || '');
 
 
 	let videoTitleDOM = document.querySelector('.container .row .col-lg-12 h1');
 
-	let addonCommand = '';
-	let endCommand = 'Avgle; // combine video files';
+	let command = '';
 
 	// add car number for main title
 	for (let node of videoTitleDOM.childNodes) {
@@ -40,10 +38,11 @@ function inject2player(utilsContext, errorStr, paramters = {}) {
 				node.parentNode.insertBefore(carNumDOM, node);
 			}
 
-			addonCommand = [
+			command = [
 				`mkdir ${carNumber};`,
 				`cd ${carNumber};`,
-				`AvgleDownloader ${carNumber} ${m3u8URLBase64};`
+				`AvgleDownloader ${carNumber} ${m3u8URLBase64};`,
+				`Avgle; // combine video files`
 			].join('\n');
 			break;
 		}
@@ -60,7 +59,7 @@ function inject2player(utilsContext, errorStr, paramters = {}) {
 	} else {
 		injectDiv.innerHTML = `
 			Download Command:<br/>
-			<pre><code>${addonCommand}\n${command}\n${endCommand}</code></pre>
+			<pre><code>${command}</code></pre>
 		`;
 	}
 
