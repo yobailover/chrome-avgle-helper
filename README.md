@@ -5,7 +5,7 @@ A Chrome extension for a free community  一个给司机用的Chrome插件
 ## Notice 注意
 
 En:
-1. **This extension is for research and leaarning only. Do not use it for illegal purposes**
+1. **This extension is for research and learning only. Do not use it for illegal purposes**
 2. **Because free community need advertising for maintaining.** So I will not include any function around removing advertising in it. (exclude mining advertising)
 
 中:

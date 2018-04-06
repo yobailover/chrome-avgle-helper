@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-TEMP_FILE="tmp.ts"
+TEMP_FILE="concat.list"
 DIR_NAME=$(basename `pwd`)
+M3U8_FILE="${DIR_NAME}.m3u8"
 TARGET_FILE="../${DIR_NAME}.mp4"
 
 #================================
@@ -108,22 +109,20 @@ done
 title "Confirmed all *.ts files are existed"
 
 # ===========================
-# Concatenating .d.ts files
-title "Concatenating ts files ...";
+# Generate concat file for ffmpeg
+title "Generate concat file for ffmpeg ...";
 if [[ -e "$TEMP_FILE" ]]; then
 	echo -e "\nTemporary file is existed! do you want to delete and continue? ($TEMP_FILE)";
 	confirm || user_abort;
 	rm $TEMP_FILE -f || error "could not delete ${TEMP_FILE}";
 fi
 
-for (( i=1 ; i<=$MAX_NUMBE ; i++ )) do
-	cat "seg-${i}-v1-a1.ts" >> $TEMP_FILE;
-	if [[ "$i" == *00 ]] || [[ "$i" == "$MAX_NUMBE" ]]; then
-		echo -e "  progress: ${BOLD}${i}/${MAX_NUMBE}${RESET}";
-	fi
-done
+# Do not actually concat the file, just generate concat file for ffmpeg
+cp $M3U8_FILE $TEMP_FILE
+sed -i 's/^http.*mp4\//file\ \'/g' $TEMP_FILE
+sed -i 's/ts$/ts\'/g' $TEMP_FILE
 echo -e "";
-title "Concatenated ts files to $TEMP_FILE"
+title "Concat file $TEMP_FILE generated"
 
 # ===========================
 # Converting .ts file
@@ -134,7 +133,9 @@ if [[ -e "$TARGET_FILE" ]]; then
 	rm $TARGET_FILE -f || error "could not delete ${TARGET_FILE}";
 fi
 
-ffmpeg -i "${TEMP_FILE}" -acodec copy -vcodec copy "${TARGET_FILE}" || error "ffmpeg convert response exception!"
+# -f concat can be performed in ffmpeg, reduce disk usage and time
+# -c copy is equal to -acodec copy -vcodec copy, we just don't want to re-encode the file
+ffmpeg -f concat -i "${TEMP_FILE}" -c copy "${TARGET_FILE}" || error "ffmpeg convert response exception!"
 title "Converted ${TEMP_FILE} file to ${TARGET_FILE}";
 
 # ===========================
