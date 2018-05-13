@@ -4,6 +4,9 @@
 # Usage: AvgleDownloader <video-name> <m3u8-url-base64>
 #
 
+# Add this referer for fix forbidden download action on CDN
+HTTP_REFERER="https://avgle.com"
+
 #================================
 #====   Colorized variables  ====
 if [[ -t 1 ]]; then # is terminal?
@@ -41,6 +44,19 @@ function warn() { echo -e "${YELLOW_BOLD} warning: ${1} ${RESET}"; }
 function success() { echo -e "${GREEN} success: ${1} ${RESET}"; }
 function error() { echo -e "${RED_BOLD}  error: ${RED}$1${RESET}\n"; exit 1; }
 
+#===================================
+#=======  Network functions  =======
+
+# $1: description
+# $2: url
+# $3: [Optional] target file
+function better_wget() {
+	local extra_opts="";
+	if [[ -n "$3" ]]; then extra_opts="-O $3"; fi
+
+	wget --header "Referer: $HTTP_REFERER" $2 $extra_opts || error "Could not download $1";
+}
+
 
 DIV_LINE="===========================================================";
 echo -e "\n${DIV_LINE}"
@@ -55,7 +71,7 @@ echo -e ' | | | |/ _ \ \ /\ / / '\''_ \| |/ _ \ / _` |/ _` |/ _ \ '\''__|'
 echo -e ' | |_| | (_) \ V  V /| | | | | (_) | (_| | (_| |  __/ |   '
 echo -e ' |____/ \___/ \_/\_/ |_| |_|_|\___/ \__,_|\__,_|\___|_|   '
 echo -e ''
-echo -e '            Update date: 2018-03-12'
+echo -e '            Update date: 2018-05-13'
 echo -e ''
 echo -e "${BOLD} Usage: AvgleDownloader <video-name> <m3u8-url-base64>${RESET}"
 echo -e ''
@@ -84,7 +100,7 @@ fi
 
 if [[ ! -f "${M3U8_FILE}" ]]; then
 	title "downloading m3u8 file ...";
-	wget "$M3U8_URL" -O "$M3U8_FILE" || error "could not download m3u8 file";
+	better_wget 'm3u8 file' "$M3U8_URL" "$M3U8_FILE";
 	success "downloaded m3u8 file to \"$M3U8_FILE\"";
 fi
 
@@ -154,7 +170,7 @@ getBetterFileList "$MISSING_FILE" | while read range; do
 	DOWNLOAD_URL=$(eval "echo $DOWNLOAD_URL");
 
 	title "downloading ${range}/${LAST_FRAGMENT_ID} ...";
-	wget $DOWNLOAD_URL || error "could not download \"seg-${range}-v1-a1.ts\", please try again!";
+	better_wget "\"seg-${range}-v1-a1.ts\", please try again!" "$DOWNLOAD_URL";
 	success "progress ${range}/${LAST_FRAGMENT_ID}";
 
 done || exit 1;
