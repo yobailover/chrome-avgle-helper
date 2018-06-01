@@ -71,7 +71,7 @@ echo -e ' | | | |/ _ \ \ /\ / / '\''_ \| |/ _ \ / _` |/ _` |/ _ \ '\''__|'
 echo -e ' | |_| | (_) \ V  V /| | | | | (_) | (_| | (_| |  __/ |   '
 echo -e ' |____/ \___/ \_/\_/ |_| |_|_|\___/ \__,_|\__,_|\___|_|   '
 echo -e ''
-echo -e '            Update date: 2018-05-13'
+echo -e '            Update date: 2018-06-01'
 echo -e ''
 echo -e "${BOLD} Usage: AvgleDownloader <video-name> <m3u8-url-base64>${RESET}"
 echo -e ''
@@ -155,13 +155,13 @@ function getBetterFileList() {
 			from=$1; i=$1; # reset
 		} else {
 			i=$1;
-			if(i-from==50) { # max step is 50
+			if(i-from==49) { # max step is 50: 50-1=49
 				printRange();
 				from=-1; i=-1;
 			}
 		}
 	}
-	END { if(from!=0) printRange(); }'
+	END { if(from>0) printRange(); }'
 }
 
 getBetterFileList "$MISSING_FILE" | while read range; do
