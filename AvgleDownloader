@@ -32,8 +32,8 @@ function confirm() {
 	local yn;
 	while true; do read -p "Confirm (y/n) > " yn
 		case $yn in
-			Y);&  Yes);&  YES);&  yes);&  y) return 0; ;;
-			N);&  No);&   NO);&   no);&   n) return 1; ;;
+			Y|Yes|YES|yes|y) return 0; ;;
+			N|No|NO|no|n) return 1; ;;
 		esac
 	done
 }
@@ -85,9 +85,9 @@ M3U8_URL_BASE64="$2";
 echo -e "${GREY}Video name:${DIM} ${VIDEO_NAME}${RESET}";
 echo -e "${GREY}M3U8 URL Base64:${DIM} ${M3U8_URL_BASE64}${RESET}";
 
-echo "$M3U8_URL_BASE64" | base64 -d >/dev/null || error "input m3u8 url is invalid!";
+echo "$M3U8_URL_BASE64" | base64 --decode >/dev/null || error "input m3u8 url is invalid!";
 
-M3U8_URL=`echo "$M3U8_URL_BASE64" | base64 -d`
+M3U8_URL=`echo "$M3U8_URL_BASE64" | base64 --decode`
 echo -e "${GREY}M3U8 URL:${DIM} ${M3U8_URL}${RESET}";
 
 M3U8_FILE="${VIDEO_NAME}.m3u8"
