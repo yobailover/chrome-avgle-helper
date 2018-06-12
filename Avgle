@@ -28,8 +28,8 @@ function confirm() {
 	local yn;
 	while true; do read -p "Confirm (y/n) > " yn
 		case $yn in
-			Y);&  Yes);&  YES);&  yes);&  y) return 0; ;;
-			N);&  No);&   NO);&   no);&   n) return 1; ;;
+			Y|Yes|YES|yes|y) return 0 ;;
+			N|No|NO|no|n) return 1 ;;
 		esac
 	done
 }
@@ -56,7 +56,7 @@ echo -e ' /_/    \_\_/ \__, |_|\___|'
 echo -e '               __/ |       '
 echo -e '              |___/        '
 echo -e ''
-echo -e '            Update date: 2018-04-06'
+echo -e '            Update date: 2018-06-13'
 echo -e ''
 echo -e "${BOLD} 1.Concat seg-*-v1-a1.ts you downloaded from avgle"
 echo -e "${BOLD} 2.Convert ts file to mp4 using ffmpeg"
@@ -65,9 +65,10 @@ echo -e "${BOLD} 4.Remove All temporary *.ts files if you don't need them anymor
 echo -e "${DIV_LINE}\n"
 
 # ===========================
-# Checking tools
+# Checking dependencies
 [[ -z `which ffmpeg` ]] && error "\"ffmpeg\" is missing! (Ubuntu: sudo apt install ffmpeg)";
 [[ -z `which gawk` ]] && error "\"gawk\" is missing! (Ubuntu: sudo apt install gawk)";
+[[ -z `which sed` ]] && error "\"sed\" is missing! (Ubuntu: sudo apt install sed)";
 
 # ===========================
 # Checking path
@@ -114,11 +115,15 @@ title "Generate concat file for ffmpeg ...";
 if [[ -e "$TEMP_FILE" ]]; then
 	echo -e "\nTemporary file is existed! do you want to delete and continue? ($TEMP_FILE)";
 	confirm || user_abort;
-	rm $TEMP_FILE -f || error "could not delete ${TEMP_FILE}";
+	rm -f $TEMP_FILE || error "could not delete ${TEMP_FILE}";
 fi
 
+# ===========================
+# check is m3u8 list file existed
+[[ -f "$M3U8_FILE" ]] || error "m3u8 play list file \"$M3U8_FILE\" is not existed!";
+
 # Do not actually concat the file, just generate concat file for ffmpeg
-cp $M3U8_FILE $TEMP_FILE
+cp "$M3U8_FILE" "$TEMP_FILE";
 sed -i -e '/^#/d' -e 's:^http.*mp4/:file :g' $TEMP_FILE
 echo -e "";
 title "Concat file $TEMP_FILE generated"
@@ -129,12 +134,17 @@ title "Converting ts file to mp4 files ..."
 if [[ -e "$TARGET_FILE" ]]; then
 	echo -e "\nTarget file is existed! do you want to delete and continue? ($TARGET_FILE)";
 	confirm || user_abort;
-	rm $TARGET_FILE -f || error "could not delete ${TARGET_FILE}";
+	rm -f $TARGET_FILE || error "could not delete ${TARGET_FILE}";
 fi
 
 # -f concat can be performed in ffmpeg, reduce disk usage and time
 # -c copy is equal to -acodec copy -vcodec copy, we just don't want to re-encode the file
-ffmpeg -f concat -i "${TEMP_FILE}" -c copy "${TARGET_FILE}" || error "ffmpeg convert response exception!"
+# -bsf: Bitstream Filters  -bsf:a audio stream filter
+# aac_adtstoasc: https://ffmpeg.org/ffmpeg-bitstream-filters.html#aac_005fadtstoasc
+#   Convert MPEG-2/4 AAC ADTS to an MPEG-4 Audio Specific Configuration bitstream.
+#   Reference from repo: https://github.com/mywarr/chrome-avgle-helper
+ffmpeg -f concat -i "${TEMP_FILE}" -bsf:a aac_adtstoasc -c copy "${TARGET_FILE}" \
+	|| error "ffmpeg convert response exception!"
 title "Converted ${TEMP_FILE} file to ${TARGET_FILE}";
 
 # ===========================
@@ -143,8 +153,8 @@ echo -e "\nDo you want to delete temporarty files (included *.d.ts)?";
 confirm || finish
 
 title "Deleting seg-*-v1-a1.ts files ..."
-for (( i=1 ; i<=$MAX_NUMBE ; i++ )) do rm "seg-${i}-v1-a1.ts" -f; done
-rm "${TEMP_FILE}" -f;
+for (( i=1 ; i<=$MAX_NUMBE ; i++ )) do rm -f "seg-${i}-v1-a1.ts"; done
+rm -f "${TEMP_FILE}";
 title "All temporary files are deleted!"
 
 finish
