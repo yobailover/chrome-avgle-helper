@@ -40,6 +40,10 @@ En:
 2. Download video follow command on the online player page by script `AvgleDownloader`
 3. Combine video files by script `Avgle`
 
+## TODO
+
+- [ ] Add support for `x**deos` (Download and Merge flow are most same with this)
+
 ## License
 
 Sources are licensed under the [GPL-3.0 License](LICENSE).
