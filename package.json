@@ -1,12 +1,13 @@
 {
 	"name": "chrome-avgle-helper",
-	"version": "1.3.0",
+	"version": "1.3.1",
 	"description": "A Chrome extension for enhancing Avgle website",
 	"main": "src/index.js",
 	"scripts": {
 		"start": "node ./build/build.js",
 		"build": "node ./build/build.js",
-		"watch": "node ./build/build.js -w"
+		"watch": "node ./build/build.js -w",
+		"dev": "node ./build/build.js -w"
 	},
 	"author": "OldDriver",
 	"license": "GPL-3.0",
