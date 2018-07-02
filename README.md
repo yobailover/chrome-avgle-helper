@@ -26,7 +26,7 @@ En:
 1. download video 下载
 2. display video number friendly 车牌号
 
-## Usage
+## Usage 用法
 
 0. Clone/Download this repository to local.
 	- **How?** (There is a button named **Clone or download** at the top right of this page)
