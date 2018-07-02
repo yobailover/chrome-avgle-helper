@@ -1,7 +1,7 @@
 {
 	"manifest_version": 2,
 	"name": "Avgle Helper",
-	"version": "1.2.0",
+	"version": "1.3.1",
 	"description": "A Chrome extension",
 	"background": {
 		"scripts": ["dist/index.js"],

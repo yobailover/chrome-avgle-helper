@@ -7,6 +7,11 @@
 # Add this referer for fix forbidden download action on CDN
 HTTP_REFERER="https://avgle.com"
 
+# The idea why add user-agent header is from fork repository by [mywarr](https://github.com/mywarr)
+# And the following User-Agent is reference from: (Last updated: Tue, 12 Jun 2018 18:38:12 +0000)
+# https://techblog.willshouse.com/2012/01/03/most-common-user-agents/
+HTTP_USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36";
+
 #================================
 #====   Colorized variables  ====
 if [[ -t 1 ]]; then # is terminal?
@@ -32,8 +37,8 @@ function confirm() {
 	local yn;
 	while true; do read -p "Confirm (y/n) > " yn
 		case $yn in
-			Y);&  Yes);&  YES);&  yes);&  y) return 0; ;;
-			N);&  No);&   NO);&   no);&   n) return 1; ;;
+			Y|Yes|YES|yes|y) return 0 ;;
+			N|No|NO|no|n) return 1 ;;
 		esac
 	done
 }
@@ -54,7 +59,8 @@ function better_wget() {
 	local extra_opts="";
 	if [[ -n "$3" ]]; then extra_opts="-O $3"; fi
 
-	wget --header "Referer: $HTTP_REFERER" $2 $extra_opts || error "Could not download $1";
+	wget --header "Referer: $HTTP_REFERER" --header "User-Agent: $HTTP_USER_AGENT" \
+		$2 $extra_opts || error "Could not download $1";
 }
 
 
@@ -71,12 +77,19 @@ echo -e ' | | | |/ _ \ \ /\ / / '\''_ \| |/ _ \ / _` |/ _` |/ _ \ '\''__|'
 echo -e ' | |_| | (_) \ V  V /| | | | | (_) | (_| | (_| |  __/ |   '
 echo -e ' |____/ \___/ \_/\_/ |_| |_|_|\___/ \__,_|\__,_|\___|_|   '
 echo -e ''
-echo -e '            Update date: 2018-05-13'
+echo -e '            Update date: 2018-06-13'
 echo -e ''
 echo -e "${BOLD} Usage: AvgleDownloader <video-name> <m3u8-url-base64>${RESET}"
 echo -e ''
 echo -e "${DIV_LINE}\n"
 
+# ===========================
+# Checking dependencies
+[[ -z `which wget` ]] && error "\"wget\" is missing! (Ubuntu: sudo apt install wget)";
+[[ -z `which gawk` ]] && error "\"gawk\" is missing! (Ubuntu: sudo apt install gawk)";
+
+# ===========================
+# Checking arguments
 [[ -z "$1" ]] && error "usage: AvgleDownloader <video-name> <m3u8-url-base64>";
 [[ -z "$2" ]] && error "usage: AvgleDownloader <video-name> <m3u8-url-base64>";
 
@@ -85,9 +98,9 @@ M3U8_URL_BASE64="$2";
 echo -e "${GREY}Video name:${DIM} ${VIDEO_NAME}${RESET}";
 echo -e "${GREY}M3U8 URL Base64:${DIM} ${M3U8_URL_BASE64}${RESET}";
 
-echo "$M3U8_URL_BASE64" | base64 -d >/dev/null || error "input m3u8 url is invalid!";
+echo "$M3U8_URL_BASE64" | base64 --decode >/dev/null || error "input m3u8 url is invalid!";
 
-M3U8_URL=`echo "$M3U8_URL_BASE64" | base64 -d`
+M3U8_URL=`echo "$M3U8_URL_BASE64" | base64 --decode`
 echo -e "${GREY}M3U8 URL:${DIM} ${M3U8_URL}${RESET}";
 
 M3U8_FILE="${VIDEO_NAME}.m3u8"
@@ -105,7 +118,7 @@ if [[ ! -f "${M3U8_FILE}" ]]; then
 fi
 
 # get total file count:
-function getLastVideoFragment() { cat "$M3U8_FILE" | awk '!/^#/ {print $0}' | tail -n1; }
+function getLastVideoFragment() { cat "$M3U8_FILE" | gawk '!/^#/ {print $0}' | tail -n1; }
 LAST_FRAGMENT_URL=`getLastVideoFragment`;
 
 LAST_FRAGMENT="${LAST_FRAGMENT_URL##*/}";
@@ -143,7 +156,7 @@ if [[ "$MISSING_FILE_COUNT" == "0" ]]; then
 fi
 
 function getBetterFileList() {
-	echo -e "$1" | awk '
+	echo -e "$1" | gawk '
 	function printRange() {
 		if(i!=from) print "{" from ".." i "}";
 		else print from;
@@ -155,13 +168,13 @@ function getBetterFileList() {
 			from=$1; i=$1; # reset
 		} else {
 			i=$1;
-			if(i-from==50) { # max step is 50
+			if(i-from==49) { # max step is 50: 50-1=49
 				printRange();
 				from=-1; i=-1;
 			}
 		}
 	}
-	END { if(from!=0) printRange(); }'
+	END { if(from>0) printRange(); }'
 }
 
 getBetterFileList "$MISSING_FILE" | while read range; do

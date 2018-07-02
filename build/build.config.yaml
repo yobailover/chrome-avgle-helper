@@ -10,7 +10,7 @@ src:
         - "popup.js"
     styles:
 dist:
-    base: dist
+    base: extension/dist
     clean: true
 
 watch:

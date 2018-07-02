@@ -25,9 +25,10 @@ function inject2player(utilsContext, errorStr, paramters = {}) {
 	for (let node of videoTitleDOM.childNodes) {
 		if (node.nodeType == Node.TEXT_NODE) {
 			let videoTitle = node.textContent;
+
 			let carNumber = utilsContext.parseCarNumber(videoTitle);
 			if (!carNumber) {
-				let avgleId = tabURL.match(/\/(\d+)\//);
+				let avgleId = tabURL.match(/\/video\/(\w+)\//);
 				carNumber = `avgle-${avgleId ? avgleId[1] : 'unknown'}`;
 			} else if (!document.querySelector('.chrome-avgle-extension.car-number')) {
 				// if has not insert car number badge
