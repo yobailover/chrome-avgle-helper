@@ -56,7 +56,7 @@ echo -e ' /_/    \_\_/ \__, |_|\___|'
 echo -e '               __/ |       '
 echo -e '              |___/        '
 echo -e ''
-echo -e '            Update date: 2018-06-13'
+echo -e '            Update date: 2018-10-12'
 echo -e ''
 echo -e "${BOLD} 1.Concat seg-*-v1-a1.ts you downloaded from avgle"
 echo -e "${BOLD} 2.Convert ts file to mp4 using ffmpeg"
@@ -143,7 +143,7 @@ fi
 # aac_adtstoasc: https://ffmpeg.org/ffmpeg-bitstream-filters.html#aac_005fadtstoasc
 #   Convert MPEG-2/4 AAC ADTS to an MPEG-4 Audio Specific Configuration bitstream.
 #   Reference from repo: https://github.com/mywarr/chrome-avgle-helper
-ffmpeg -f concat -i "${TEMP_FILE}" -bsf:a aac_adtstoasc -c copy "${TARGET_FILE}" \
+ffmpeg -f concat -i "${TEMP_FILE}" -bsf:a aac_adtstoasc -c copy "${TARGET_FILE}" -loglevel error \
 	|| error "ffmpeg convert response exception!"
 title "Converted ${TEMP_FILE} file to ${TARGET_FILE}";
 
