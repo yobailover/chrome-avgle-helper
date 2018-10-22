@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-TEMP_FILE="concat.list"
 DIR_NAME=$(basename `pwd`)
 M3U8_FILE="${DIR_NAME}.m3u8"
+LIST_FILE="concat.list"
 TARGET_FILE="../${DIR_NAME}.mp4"
 
 #================================
@@ -56,7 +56,7 @@ echo -e ' /_/    \_\_/ \__, |_|\___|'
 echo -e '               __/ |       '
 echo -e '              |___/        '
 echo -e ''
-echo -e '            Update date: 2018-10-12'
+echo -e '            Update date: 2018-10-23'
 echo -e ''
 echo -e "${BOLD} 1.Concat seg-*-v1-a1.ts you downloaded from avgle"
 echo -e "${BOLD} 2.Convert ts file to mp4 using ffmpeg"
@@ -110,23 +110,21 @@ done
 title "Confirmed all *.ts files are existed"
 
 # ===========================
-# Generate concat file for ffmpeg
-title "Generate concat file for ffmpeg ...";
-if [[ -e "$TEMP_FILE" ]]; then
-	echo -e "\nTemporary file is existed! do you want to delete and continue? ($TEMP_FILE)";
-	confirm || user_abort;
-	rm -f $TEMP_FILE || error "could not delete ${TEMP_FILE}";
-fi
-
-# ===========================
-# check is m3u8 list file existed
+# Generate concat list file for ffmpeg
+title "Generating list file for ffmpeg ...";
 [[ -f "$M3U8_FILE" ]] || error "m3u8 play list file \"$M3U8_FILE\" is not existed!";
 
-# Do not actually concat the file, just generate concat file for ffmpeg
-cp "$M3U8_FILE" "$TEMP_FILE";
-sed -i -e '/^#/d' -e 's:^http.*mp4/:file :g' $TEMP_FILE
+if [[ -e "$LIST_FILE" ]]; then
+	echo -e "\nList file ($LIST_FILE) is existed! Do you want to delete it and continue?";
+	confirm || user_abort;
+	rm -f $LIST_FILE || error "could not delete ${LIST_FILE}";
+fi
+
+sed -e '/^#/d' -e 's:^http.*mp4/:file :g' "$M3U8_FILE" > "$LIST_FILE" \
+	|| error "generate list file failed!";
+
 echo -e "";
-title "Concat file $TEMP_FILE generated"
+title "Concat file $LIST_FILE generated"
 
 # ===========================
 # Converting .ts file
@@ -143,9 +141,9 @@ fi
 # aac_adtstoasc: https://ffmpeg.org/ffmpeg-bitstream-filters.html#aac_005fadtstoasc
 #   Convert MPEG-2/4 AAC ADTS to an MPEG-4 Audio Specific Configuration bitstream.
 #   Reference from repo: https://github.com/mywarr/chrome-avgle-helper
-ffmpeg -f concat -i "${TEMP_FILE}" -bsf:a aac_adtstoasc -c copy "${TARGET_FILE}" -loglevel error \
+ffmpeg -f concat -i "${LIST_FILE}" -bsf:a aac_adtstoasc -c copy "${TARGET_FILE}" -loglevel error \
 	|| error "ffmpeg convert response exception!"
-title "Converted ${TEMP_FILE} file to ${TARGET_FILE}";
+title "Converted ${LIST_FILE} file to ${TARGET_FILE}";
 
 # ===========================
 # Deleting files
@@ -154,7 +152,7 @@ confirm || finish
 
 title "Deleting seg-*-v1-a1.ts files ..."
 for (( i=1 ; i<=$MAX_NUMBE ; i++ )) do rm -f "seg-${i}-v1-a1.ts"; done
-rm -f "${TEMP_FILE}";
+rm -f "${LIST_FILE}";
 title "All temporary files are deleted!"
 
 finish
