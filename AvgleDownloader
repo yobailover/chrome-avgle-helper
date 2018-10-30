@@ -95,7 +95,7 @@ echo -e ' | | | |/ _ \ \ /\ / / '\''_ \| |/ _ \ / _` |/ _` |/ _ \ '\''__|'
 echo -e ' | |_| | (_) \ V  V /| | | | | (_) | (_| | (_| |  __/ |   '
 echo -e ' |____/ \___/ \_/\_/ |_| |_|_|\___/ \__,_|\__,_|\___|_|   '
 echo -e ''
-echo -e '            Update date: 2018-10-27'
+echo -e '            Update date: 2018-10-30'
 echo -e ''
 echo -e "${BOLD} Usage: AvgleDownloader <video-name> <m3u8-url-base64>${RESET}"
 echo -e ''
@@ -112,7 +112,9 @@ fi
 # ===========================
 # Checking dependencies
 [[ -z `which gawk` ]] && error "\"gawk\" is missing! (Ubuntu: sudo apt install gawk)";
-if [[ -z `which "$WGET_BIN"` ]]; then
+
+WHICH_WGET="$(which "$WGET_BIN" 2>/dev/null)"
+if [[ -z "$WHICH_WGET" ]]; then
 	if [[ $WIN_USER == true ]]; then
 		__DIRNAME="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)";
 
