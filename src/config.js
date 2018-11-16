@@ -1,8 +1,11 @@
 /**
- * This URL pattern is used for catching video playlist request
- * 用于拦截 Avgle 的视频列表请求的 URL Pattern
+ * This URL pattern array is used for catching video playlist request
+ * 用于拦截视频列表 m3u8 文件请求的 URL Pattern 数组
  */
-export const M3U8_PATTERN = '*://*.ahcdn.com/*.m3u8';
+export const M3U8_PATTERN_ARRAY = [
+	'*://*.ahcdn.com/*.m3u8',
+	'*://*.cdn.qooqlevideo.com/*.m3u8'
+];
 
 /**
  * URL pattern of Avgle video player page
