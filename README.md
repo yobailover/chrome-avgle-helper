@@ -10,6 +10,16 @@ You can learn how to create Chrome extension, write Bash script and more from th
 **这个插件仅供用于研究学习. 请勿用于非法用途**   
 你可以从这个仓库中学到如何创建 Chrome 插件, 编写 Bash 脚本等等 ...
 
+## 🚀 Enable `aria2` multi-thread download mode
+
+This feature is for testing only!   
+
+``` bash
+sudo apt install aria2 # Ubuntu
+brew install aria2 # OS X
+```
+
+
 ## Function 功能
 
 1. download video 下载
