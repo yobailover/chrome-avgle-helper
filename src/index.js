@@ -1,7 +1,7 @@
 //@ts-check
 /// <reference path="./index.d.ts" />
 
-import { M3U8_PATTERN, VIDEO_PAGE_PATTERN } from "./config";
+import { M3U8_PATTERN_ARRAY, VIDEO_PAGE_PATTERN } from "./config";
 import { getInjectScript } from "./inject_to_player";
 import { info, getLogHistoryHTML, error, bindLogCallback, unbindLogCallback, clearLogHistory } from "./logger";
 
@@ -84,4 +84,4 @@ chrome.webRequest.onBeforeRequest.addListener(details => {
 		// }
 	});
 
-}, { urls: [M3U8_PATTERN] });
+}, { urls: M3U8_PATTERN_ARRAY });
