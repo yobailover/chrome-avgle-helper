@@ -6,11 +6,17 @@
 
 # Add this referer for fix forbidden download action on CDN
 HTTP_REFERER="https://avgle.com"
+# enable referer header by default, but it will be turn off (false) after download first file failed.
+ENABLE_REFERER=true
 
 # The idea why add user-agent header is from fork repository by [mywarr](https://github.com/mywarr)
 # And the following User-Agent is reference from: (Last updated: Tue, 12 Jun 2018 18:38:12 +0000)
 # https://techblog.willshouse.com/2012/01/03/most-common-user-agents/
 HTTP_USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36";
+
+# wget binary file
+# it will be a path to a binary file in `windows-libs` directory if this script is running in git bash
+WGET_BIN="wget";
 
 #================================
 #====   Colorized variables  ====
@@ -56,11 +62,23 @@ function error() { echo -e "${RED_BOLD}  error: ${RED}$1${RESET}\n"; exit 1; }
 # $2: url
 # $3: [Optional] target file
 function better_wget() {
-	local extra_opts="";
-	if [[ -n "$3" ]]; then extra_opts="-O $3"; fi
+	local download_ok=true;
 
-	wget --header "Referer: $HTTP_REFERER" --header "User-Agent: $HTTP_USER_AGENT" \
-		$2 $extra_opts || error "Could not download $1";
+	local extra_opts="";
+	[[ -n "$3" ]] && extra_opts="-O $3";
+
+	if [[ $ENABLE_REFERER == true ]]; then
+		"$WGET_BIN" --header "Referer: $HTTP_REFERER" --header "User-Agent: $HTTP_USER_AGENT" \
+			$2 $extra_opts || download_ok=false;
+
+		if [[ $download_ok != true ]]; then
+			warn "execute wget with 'Referer' header failed! (trying to execute again without 'Referer' header)";
+			ENABLE_REFERER=false;
+			"$WGET_BIN" --header "User-Agent: $HTTP_USER_AGENT" $2 $extra_opts || error "Could not download $1";
+		fi
+	else
+		"$WGET_BIN" --header "User-Agent: $HTTP_USER_AGENT" $2 $extra_opts || error "Could not download $1";
+	fi
 }
 
 
@@ -77,16 +95,41 @@ echo -e ' | | | |/ _ \ \ /\ / / '\''_ \| |/ _ \ / _` |/ _` |/ _ \ '\''__|'
 echo -e ' | |_| | (_) \ V  V /| | | | | (_) | (_| | (_| |  __/ |   '
 echo -e ' |____/ \___/ \_/\_/ |_| |_|_|\___/ \__,_|\__,_|\___|_|   '
 echo -e ''
-echo -e '            Update date: 2018-06-13'
+echo -e '            Update date: 2018-10-30'
 echo -e ''
 echo -e "${BOLD} Usage: AvgleDownloader <video-name> <m3u8-url-base64>${RESET}"
 echo -e ''
 echo -e "${DIV_LINE}\n"
 
 # ===========================
+# Windows User
+WIN_USER=false
+UNAME_S="$(uname -s)";
+if [[ "$UNAME_S" == MINGW* ]] || [[ "$UNAME_S" == CYGWIN* ]]; then
+	WIN_USER=true;
+fi
+
+# ===========================
 # Checking dependencies
-[[ -z `which wget` ]] && error "\"wget\" is missing! (Ubuntu: sudo apt install wget)";
 [[ -z `which gawk` ]] && error "\"gawk\" is missing! (Ubuntu: sudo apt install gawk)";
+
+WHICH_WGET="$(which "$WGET_BIN" 2>/dev/null)"
+if [[ -z "$WHICH_WGET" ]]; then
+	if [[ $WIN_USER == true ]]; then
+		__DIRNAME="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)";
+
+		pushd "$__DIRNAME" > /dev/null || error "goto script directory failed!";
+		WGET_BIN="$(find windows-libs -type f -name "wget.exe" | head -n1)";
+		if [[ -z "$WGET_BIN" ]]; then
+			FIX_IT="(How to fix this error: read windows-libs/README.md)"
+			error "wget.exe is missng in directory \"windows-libs\". $FIX_IT";
+		fi
+		WGET_BIN="$__DIRNAME/$WGET_BIN";
+		popd;
+	else
+		error "\"$WGET_BIN\" is missing! (Ubuntu: sudo apt install $WGET_BIN)";
+	fi
+fi
 
 # ===========================
 # Checking arguments
